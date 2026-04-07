@@ -6,7 +6,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.items.VanillaItem;
 import io.github.thebusybiscuit.slimefun4.implementation.items.multiblocks.EnhancedCraftingTable;
 import lombok.experimental.UtilityClass;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -122,7 +121,7 @@ public class CraftingTablePatch {
             try {
                 convertRecipe(Arrays.asList(input), output);
             } catch (RuntimeException e) {
-                String name = PlainTextComponentSerializer.plainText().serialize(output.displayName());
+                String name = Util.describeItem(output);
                 SaneCrafting.getInstance().getLogger().severe("Failed to convert Enhanced Crafting Table recipe for " + name);
                 e.printStackTrace();
                 continue;
@@ -137,7 +136,7 @@ public class CraftingTablePatch {
                     convertRecipe(generateRecipeId(vanillaItem), Arrays.asList(vanillaItem.getRecipe()), vanillaItem.getRecipeOutput());
                     changedRecipes++;
                 } catch (RuntimeException e) {
-                    String name = PlainTextComponentSerializer.plainText().serialize(vanillaItem.getItem().displayName());
+                    String name = Util.describeItem(vanillaItem.getItem());
                     SaneCrafting.getInstance().getLogger().severe("Failed to convert Enhanced Crafting Table recipe for " + name);
                     e.printStackTrace();
                 }
