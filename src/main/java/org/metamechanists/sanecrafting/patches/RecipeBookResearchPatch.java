@@ -3,40 +3,43 @@ package org.metamechanists.sanecrafting.patches;
 import io.github.thebusybiscuit.slimefun4.api.events.ResearchUnlockEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.player.PlayerProfile;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 import org.metamechanists.sanecrafting.SaneCrafting;
-import org.metamechanists.sanecrafting.Util;
-
-import java.util.UUID;
-
 
 public final class RecipeBookResearchPatch implements Listener {
     private RecipeBookResearchPatch() {}
 
     public static void apply() {
         Bukkit.getServer().getPluginManager().registerEvents(new RecipeBookResearchPatch(), SaneCrafting.getInstance());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            discoverAvailableRecipes(player);
+        }
         SaneCrafting.getInstance().getLogger().info("Applied RecipeBookResearch patch");
     }
 
     @EventHandler
     public static void onJoin(@NotNull PlayerJoinEvent e) {
+        discoverAvailableRecipes(e.getPlayer());
+    }
+
+    private static void discoverAvailableRecipes(@NotNull Player player) {
         if (Slimefun.getRegistry().isResearchingEnabled()) {
-            PlayerProfile.get(e.getPlayer(), profile -> discoverRecipes(
-                    e.getPlayer(),
+            PlayerProfile.get(player, profile -> discoverRecipes(
+                    player,
                     item -> !item.hasResearch() || profile.hasUnlocked(item.getResearch())
             ));
         } else {
-            discoverRecipes(e.getPlayer(), item -> true);
+            discoverRecipes(player, item -> true);
         }
     }
 
@@ -44,7 +47,9 @@ public final class RecipeBookResearchPatch implements Listener {
     public static void onResearch(@NotNull ResearchUnlockEvent e) {
         for (SlimefunItem item : e.getResearch().getAffectedItems()) {
             if (hasWorkbenchRecipe(item)) {
-                e.getPlayer().discoverRecipe(new NamespacedKey(SaneCrafting.getInstance(), Util.generateRecipeId(item)));
+                for (NamespacedKey key : CraftingTablePatch.getRecipeKeys(item)) {
+                    e.getPlayer().discoverRecipe(key);
+                }
             }
         }
     }
@@ -72,7 +77,7 @@ public final class RecipeBookResearchPatch implements Listener {
         e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public static void onPrepareCraft(@NotNull PrepareItemCraftEvent e) {
         SlimefunItem result = SlimefunItem.getByItem(e.getInventory().getResult());
         if (result == null) {
@@ -98,13 +103,15 @@ public final class RecipeBookResearchPatch implements Listener {
     private static void discoverRecipes(@NotNull Player player, @NotNull java.util.function.Predicate<SlimefunItem> canDiscover) {
         for (SlimefunItem item : Slimefun.getRegistry().getEnabledSlimefunItems()) {
             if (hasWorkbenchRecipe(item) && canDiscover.test(item)) {
-                player.discoverRecipe(new NamespacedKey(SaneCrafting.getInstance(), Util.generateRecipeId(item)));
+                for (NamespacedKey key : CraftingTablePatch.getRecipeKeys(item)) {
+                    player.discoverRecipe(key);
+                }
             }
         }
     }
 
     private static boolean hasWorkbenchRecipe(@NotNull SlimefunItem item) {
-        return item.getRecipeType() == RecipeType.ENHANCED_CRAFTING_TABLE;
+        return CraftingTablePatch.isSupportedRecipeType(item.getRecipeType()) && !CraftingTablePatch.getRecipeKeys(item).isEmpty();
     }
 
     private static boolean hasUnlockedResearch(@NotNull Player player, @NotNull SlimefunItem item) {

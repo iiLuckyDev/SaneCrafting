@@ -15,7 +15,15 @@ public final class Util {
 
     // Technically could lead to clashes if two shaped recipes for same item but... hopefully not...
     public static @NotNull String generateRecipeId(@NotNull ItemStack output) {
-        return generateRecipeId(SlimefunItem.getByItem(output));
+        SlimefunItem slimefunItem = SlimefunItem.getByItem(output);
+        if (slimefunItem != null) {
+            return generateRecipeId(slimefunItem);
+        }
+
+        String normalisedName = output.getType().name().toLowerCase(Locale.ROOT)
+                .replace(' ', '_')
+                .replaceAll("[^a-z0-9/._\\-]", "");
+        return "sanecrafting_" + normalisedName;
     }
 
     public static @NotNull String generateRecipeId(@NotNull SlimefunItem item) {
@@ -45,7 +53,7 @@ public final class Util {
             }
         }
 
-        SaneCrafting.getInstance().getLogger().severe("Failed to initialise SaneCrafting; EnhancedCraftingTable does not exist!");
+        SaneCrafting.getInstance().getLogger().severe("Failed to initialise SaneCrafting; " + clazz.getSimpleName() + " does not exist!");
         return null;
     }
 }

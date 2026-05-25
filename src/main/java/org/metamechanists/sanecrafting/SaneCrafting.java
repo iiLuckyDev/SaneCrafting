@@ -1,7 +1,6 @@
 package org.metamechanists.sanecrafting;
 
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
-import io.github.thebusybiscuit.slimefun4.api.events.SlimefunItemRegistryFinalizedEvent;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bstats.bukkit.Metrics;
@@ -35,10 +34,6 @@ public final class SaneCrafting extends JavaPlugin implements SlimefunAddon, Lis
         new Metrics(this, BSTATS_ID);
 
         Bukkit.getPluginManager().registerEvents(this, this);
-
-        // Fallback in case the registry-finalized signal was emitted before we enabled.
-        Bukkit.getScheduler().runTaskLater(this, this::applyPatches, 40L);
-
     }
 
     @Override
@@ -59,13 +54,8 @@ public final class SaneCrafting extends JavaPlugin implements SlimefunAddon, Lis
     }
 
     @EventHandler
-    public void onRegistryFinalized(@NonNull SlimefunItemRegistryFinalizedEvent event) {
-        applyPatches();
-    }
-
-    @EventHandler
     public void onServerLoad(@NonNull ServerLoadEvent event) {
-        applyPatches();
+        Bukkit.getScheduler().runTask(this, this::applyPatches);
     }
 
     private void applyPatches() {

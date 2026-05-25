@@ -59,14 +59,14 @@
         </plugins>
     </build>
 
-    <description>Allow Slimefun's Enhanced Crafting Table recipes to be crafted in a regular Crafting Table</description>
+    <description>Allow Slimefun workbench recipes to be crafted in a regular Crafting Table</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
-        <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
-        <slimefun.version>5.0.0-UNOFFICIAL-with-pr-fix</slimefun.version>
-        <slimefun.jar>${project.basedir}/libs/Slimefun-v5.0.0-UNOFFICIAL-with-pr-fix.jar</slimefun.jar>
+        <paper.version>1.21.11-R0.1-20260310.030221-86</paper.version>
+        <slimefun.version>5.0.0-UNOFFICIAL</slimefun.version>
+        <slimefun.jar>${project.basedir}/libs/Slimefun-v5.0.0-UNOFFICIAL.jar</slimefun.jar>
     </properties>
 
     <repositories>
